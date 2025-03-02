@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 
-// 1. Modelo de Producto
 class Producto {
   int? id;
   String descripcion;
@@ -21,7 +20,6 @@ class Producto {
     required this.observacion,
   });
 
-  // Convertir de Map a Producto
   factory Producto.fromMap(Map<String, dynamic> map) {
     return Producto(
       id: map['id'],
@@ -36,7 +34,6 @@ class Producto {
     );
   }
 
-  // Convertir de Producto a Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -49,7 +46,6 @@ class Producto {
   }
 }
 
-// 2. Clase de ayuda para la Base de Datos
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
@@ -66,7 +62,6 @@ class DatabaseHelper {
     return _database!;
   }
 
-  // Inicializar la base de datos
   Future<Database> _initDB() async {
     // Obtiene la ruta base para las BD en Android/iOS
     final dbPath = await getDatabasesPath();
@@ -76,7 +71,6 @@ class DatabaseHelper {
     return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
-  // Crear la tabla de productos
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE productos(
@@ -97,13 +91,11 @@ class DatabaseHelper {
     });
   }
 
-  // Insertar un producto
   Future<int> insertProducto(Producto producto) async {
     final db = await database;
     return await db.insert('productos', producto.toMap());
   }
 
-  // Obtener todos los productos
   Future<List<Producto>> getProductos() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('productos');
@@ -111,7 +103,6 @@ class DatabaseHelper {
   }
 }
 
-// 3. Pantalla Principal - Lista de Productos
 class ProductListPage extends StatefulWidget {
   const ProductListPage({Key? key}) : super(key: key);
 
@@ -135,12 +126,10 @@ class _ProductListPageState extends State<ProductListPage> {
   }
 
   void _navigateToAddProduct() async {
-    // Navegar a la pantalla de agregar producto
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AddProductPage()),
     );
-    // Al regresar, recargamos la lista
     _loadProductos();
   }
 
@@ -192,7 +181,6 @@ class _ProductListPageState extends State<ProductListPage> {
   }
 }
 
-// 4. Pantalla para Agregar Producto
 class AddProductPage extends StatefulWidget {
   const AddProductPage({Key? key}) : super(key: key);
 
@@ -321,7 +309,6 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 }
 
-// 5. Main - Iniciar la App
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
