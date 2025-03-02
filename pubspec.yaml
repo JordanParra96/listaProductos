@@ -9,9 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  sqflite: ^2.2.0+1 # Verifica en pub.dev si hay una versión más reciente
-  path: ^1.8.0 # Verifica en pub.dev si hay una versión más reciente
+  sqflite: ^2.2.0+1
+  path: ^1.8.0
+  path_provider: ^2.0.14
 
 dev_dependencies:
   flutter_test:
