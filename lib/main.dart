@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
@@ -29,7 +28,7 @@ class Producto {
               ? (map['precio'] as int).toDouble()
               : map['precio'],
       categoria: map['categoria'],
-      activo: map['activo'] == 1, // Se almacena 1 o 0 en la BD
+      activo: map['activo'] == 1,
       observacion: map['observacion'],
     );
   }
@@ -40,7 +39,7 @@ class Producto {
       'descripcion': descripcion,
       'precio': precio,
       'categoria': categoria,
-      'activo': activo ? 1 : 0, // Guardar como entero
+      'activo': activo ? 1 : 0,
       'observacion': observacion,
     };
   }
@@ -63,9 +62,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB() async {
-    // Obtiene la ruta base para las BD en Android/iOS
     final dbPath = await getDatabasesPath();
-    // Une la ruta con el nombre de tu archivo .db
     final path = p.join(dbPath, 'productos.db');
 
     return await openDatabase(path, version: 1, onCreate: _onCreate);
@@ -91,26 +88,26 @@ class DatabaseHelper {
     });
   }
 
-  Future<int> insertProducto(Producto producto) async {
+  Future<int> insertarProducto(Producto producto) async {
     final db = await database;
     return await db.insert('productos', producto.toMap());
   }
 
-  Future<List<Producto>> getProductos() async {
+  Future<List<Producto>> obtenerProductos() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('productos');
     return maps.map((map) => Producto.fromMap(map)).toList();
   }
 }
 
-class ProductListPage extends StatefulWidget {
-  const ProductListPage({Key? key}) : super(key: key);
+class ProductoListado extends StatefulWidget {
+  const ProductoListado({Key? key}) : super(key: key);
 
   @override
-  _ProductListPageState createState() => _ProductListPageState();
+  _ProductoListadoState createState() => _ProductoListadoState();
 }
 
-class _ProductListPageState extends State<ProductListPage> {
+class _ProductoListadoState extends State<ProductoListado> {
   late Future<List<Producto>> _futureProductos;
 
   @override
@@ -121,14 +118,14 @@ class _ProductListPageState extends State<ProductListPage> {
 
   void _loadProductos() {
     setState(() {
-      _futureProductos = DatabaseHelper().getProductos();
+      _futureProductos = DatabaseHelper().obtenerProductos();
     });
   }
 
-  void _navigateToAddProduct() async {
+  void _ingresoProducto() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddProductPage()),
+      MaterialPageRoute(builder: (context) => DatosProducto()),
     );
     _loadProductos();
   }
@@ -175,34 +172,31 @@ class _ProductListPageState extends State<ProductListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: _navigateToAddProduct,
+        onPressed: _ingresoProducto,
       ),
     );
   }
 }
 
-class AddProductPage extends StatefulWidget {
-  const AddProductPage({Key? key}) : super(key: key);
+class DatosProducto extends StatefulWidget {
+  const DatosProducto({Key? key}) : super(key: key);
 
   @override
-  _AddProductPageState createState() => _AddProductPageState();
+  _DatosProductoState createState() => _DatosProductoState();
 }
 
-class _AddProductPageState extends State<AddProductPage> {
+class _DatosProductoState extends State<DatosProducto> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controladores o variables para cada campo
   final _descripcionController = TextEditingController();
   final _precioController = TextEditingController();
   String _categoriaSeleccionada = 'Almacenamiento';
   bool _activo = false;
   final _observacionController = TextEditingController();
 
-  // Lista de categorías para el Dropdown
   final List<String> _categorias = [
     'Almacenamiento',
-    'Audio',
-    'Video',
+    'Audio o video',
     'Accesorios',
   ];
 
@@ -216,7 +210,6 @@ class _AddProductPageState extends State<AddProductPage> {
           key: _formKey,
           child: ListView(
             children: [
-              // Descripción
               TextFormField(
                 controller: _descripcionController,
                 decoration: const InputDecoration(
@@ -230,7 +223,7 @@ class _AddProductPageState extends State<AddProductPage> {
                 },
               ),
               const SizedBox(height: 16),
-              // Precio
+
               TextFormField(
                 controller: _precioController,
                 keyboardType: TextInputType.number,
@@ -246,7 +239,7 @@ class _AddProductPageState extends State<AddProductPage> {
                 },
               ),
               const SizedBox(height: 16),
-              // Categoría
+
               DropdownButtonFormField<String>(
                 value: _categoriaSeleccionada,
                 decoration: const InputDecoration(labelText: 'Categoría'),
@@ -264,7 +257,7 @@ class _AddProductPageState extends State<AddProductPage> {
                 },
               ),
               const SizedBox(height: 16),
-              // Activo
+
               CheckboxListTile(
                 title: const Text('Activo'),
                 value: _activo,
@@ -275,17 +268,16 @@ class _AddProductPageState extends State<AddProductPage> {
                 },
               ),
               const SizedBox(height: 16),
-              // Observación
+
               TextFormField(
                 controller: _observacionController,
                 decoration: const InputDecoration(labelText: 'Observación'),
               ),
               const SizedBox(height: 16),
-              // Botón Guardar
+
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // Crear objeto Producto
                     final nuevoProducto = Producto(
                       descripcion: _descripcionController.text,
                       precio: double.parse(_precioController.text),
@@ -293,9 +285,9 @@ class _AddProductPageState extends State<AddProductPage> {
                       activo: _activo,
                       observacion: _observacionController.text,
                     );
-                    // Insertar en la BD
-                    await DatabaseHelper().insertProducto(nuevoProducto);
-                    // Regresar a la pantalla anterior
+
+                    await DatabaseHelper().insertarProducto(nuevoProducto);
+
                     Navigator.pop(context);
                   }
                 },
@@ -322,7 +314,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Gestión de Productos',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const ProductListPage(),
+      home: const ProductoListado(),
     );
   }
 }
